@@ -1,74 +1,65 @@
+import { useEffect, useState } from "react";
+
 import Hero from "../components/Hero";
 import BlogCard from "../components/BlogCard";
+import Loading from "../components/Loading";
 
-const posts = [
-  {
-    id: 1,
-    title: "Understanding React Components",
-    body: "Learn how React components help you build reusable and maintainable user interfaces.",
-    likes: 124,
-  },
-  {
-    id: 2,
-    title: "Mastering React Router",
-    body: "Navigate between pages in your React applications using React Router.",
-    likes: 97,
-  },
-  {
-    id: 3,
-    title: "Getting Started with Tailwind CSS",
-    body: "Build modern user interfaces faster using utility-first CSS classes.",
-    likes: 145,
-  },
-  {
-    id: 4,
-    title: "Understanding useEffect",
-    body: "Fetch data and synchronize your components using React's useEffect hook.",
-    likes: 88,
-  },
-  {
-    id: 5,
-    title: "State Management with Jotai",
-    body: "Learn how to manage global state using Jotai in a simple and scalable way.",
-    likes: 112,
-  },
-  {
-    id: 6,
-    title: "Building Responsive Layouts",
-    body: "Create layouts that look great on desktop, tablet, and mobile devices.",
-    likes: 76,
-  },
-];
+import { getPosts } from "../services/api";
 
 function Home() {
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    async function loadPosts() {
+      try {
+        const data = await getPosts();
+        setPosts(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadPosts();
+  }, []);
+
   return (
     <>
       <Hero />
 
       <section className="max-w-7xl mx-auto px-6 pb-24">
 
-        <div className="mb-10 flex items-center justify-between">
+        <div className="mb-10">
+          <h2 className="text-3xl font-bold text-slate-900">
+            Trending Posts
+          </h2>
 
-          <div>
-            <h2 className="text-3xl font-bold text-slate-900">
-              Trending Posts
-            </h2>
+          <p className="mt-2 text-slate-500">
+            Discover what developers are reading today.
+          </p>
+        </div>
 
-            <p className="mt-2 text-slate-500">
-              Discover what people are reading today.
-            </p>
+        {loading && <Loading />}
+
+        {error && (
+          <p className="text-center text-red-500">
+            {error}
+          </p>
+        )}
+
+        {!loading && !error && (
+          <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
+            {posts.map((post) => (
+              <BlogCard
+                key={post.id}
+                post={post}
+              />
+            ))}
           </div>
-
-        </div>
-
-        <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
-          {posts.map((post) => (
-            <BlogCard
-              key={post.id}
-              post={post}
-            />
-          ))}
-        </div>
+        )}
 
       </section>
     </>

@@ -1,7 +1,11 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, Link } from "react-router-dom";
+import { useAtom } from "jotai";
 import { FiSearch, FiBookmark } from "react-icons/fi";
+import { bookmarksAtom } from "../atoms/bookmarkAtom";
 
 function Navbar() {
+  const [bookmarks] = useAtom(bookmarksAtom);
+
   const active =
     "text-blue-600 font-semibold";
 
@@ -9,22 +13,19 @@ function Navbar() {
     "text-slate-600 hover:text-blue-600 transition";
 
   return (
-    <header className="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-slate-200">
-      <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+    <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/90 backdrop-blur">
+      <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6">
 
         {/* Logo */}
-
-        <NavLink
+        <Link
           to="/"
           className="text-2xl font-extrabold text-slate-900"
         >
           Blog<span className="text-blue-600">Space</span>
-        </NavLink>
+        </Link>
 
         {/* Navigation */}
-
-        <nav className="hidden md:flex gap-8">
-
+        <nav className="hidden items-center gap-8 md:flex">
           <NavLink
             to="/"
             className={({ isActive }) =>
@@ -51,32 +52,33 @@ function Navbar() {
           >
             Bookmarks
           </NavLink>
-
         </nav>
 
         {/* Right Side */}
-
         <div className="flex items-center gap-4">
 
-          <button className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center hover:bg-slate-100 transition">
+          <button className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 transition hover:bg-slate-100">
             <FiSearch size={18} />
           </button>
 
-          <button className="relative w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center hover:bg-slate-100 transition">
+          <Link
+            to="/bookmarks"
+            className="relative flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 transition hover:bg-slate-100"
+          >
             <FiBookmark size={18} />
 
-            <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-              0
-            </span>
-
-          </button>
+            {bookmarks.length > 0 && (
+              <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-xs text-white">
+                {bookmarks.length}
+              </span>
+            )}
+          </Link>
 
           <img
             src="https://i.pravatar.cc/100"
-            alt="avatar"
-            className="w-11 h-11 rounded-full object-cover"
+            alt="User Avatar"
+            className="h-11 w-11 rounded-full object-cover"
           />
-
         </div>
 
       </div>

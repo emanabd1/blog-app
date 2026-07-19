@@ -1,20 +1,29 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
-import { FiArrowLeft, FiHeart } from "react-icons/fi";
+import { Link, useParams } from "react-router-dom";
+import { useAtom } from "jotai";
+import {
+  FiArrowLeft,
+  FiHeart,
+  FiBookmark,
+} from "react-icons/fi";
 
 import Loading from "../components/Loading";
 import CommentCard from "../components/CommentCard";
-
-import { getPost, getComments } from "../services/api";
+import {
+  getPost,
+  getComments,
+} from "../services/api";
+import { bookmarksAtom } from "../atoms/bookmarkAtom";
 
 function BlogDetails() {
   const { id } = useParams();
 
   const [post, setPost] = useState(null);
   const [comments, setComments] = useState([]);
-
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const [bookmarks, setBookmarks] = useAtom(bookmarksAtom);
 
   useEffect(() => {
     async function loadData() {
@@ -34,7 +43,9 @@ function BlogDetails() {
     loadData();
   }, [id]);
 
-  if (loading) return <Loading />;
+  if (loading) {
+    return <Loading />;
+  }
 
   if (error) {
     return (
@@ -42,6 +53,25 @@ function BlogDetails() {
         {error}
       </div>
     );
+  }
+
+  const likes =
+    typeof post.reactions === "number"
+      ? post.reactions
+      : post.reactions?.likes ?? 0;
+
+  const isBookmarked = bookmarks.some(
+    (item) => item.id === post.id
+  );
+
+  function handleBookmark() {
+    if (isBookmarked) {
+      setBookmarks(
+        bookmarks.filter((item) => item.id !== post.id)
+      );
+    } else {
+      setBookmarks([...bookmarks, post]);
+    }
   }
 
   return (
@@ -80,13 +110,20 @@ function BlogDetails() {
 
         <div className="mt-6 flex items-center gap-2 text-slate-500">
           <FiHeart />
-
-          <span>
-            {typeof post.reactions === "number"
-              ? post.reactions
-              : post.reactions?.likes ?? 0}
-          </span>
+          <span>{likes}</span>
         </div>
+
+        <button
+          onClick={handleBookmark}
+          className={`mt-6 flex items-center gap-2 rounded-xl px-5 py-3 font-medium transition ${
+            isBookmarked
+              ? "bg-blue-600 text-white"
+              : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+          }`}
+        >
+          <FiBookmark />
+          {isBookmarked ? "Bookmarked" : "Add Bookmark"}
+        </button>
 
         <p className="mt-8 text-lg leading-9 text-slate-700">
           {post.body}

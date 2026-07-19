@@ -1,13 +1,22 @@
-import { FiHeart, FiBookmark, FiArrowRight } from "react-icons/fi";
+import { useAtom } from "jotai";
 import { Link } from "react-router-dom";
+import {
+  FiHeart,
+  FiBookmark,
+  FiArrowRight,
+} from "react-icons/fi";
+
+import { bookmarksAtom } from "../atoms/bookmarkAtom";
 
 function BlogCard({ post }) {
+  const [bookmarks, setBookmarks] = useAtom(bookmarksAtom);
+
   const {
     id,
     title,
     body,
-    reactions,
     tags,
+    reactions,
   } = post;
 
   const likes =
@@ -15,10 +24,23 @@ function BlogCard({ post }) {
       ? reactions
       : reactions?.likes ?? 0;
 
+  const isBookmarked = bookmarks.some(
+    (item) => item.id === id
+  );
+
+  function handleBookmark() {
+    if (isBookmarked) {
+      setBookmarks(
+        bookmarks.filter((item) => item.id !== id)
+      );
+    } else {
+      setBookmarks([...bookmarks, post]);
+    }
+  }
+
   return (
     <article className="group overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
 
-      {/* Blog Image */}
       <img
         src={`https://picsum.photos/seed/${id}/600/400`}
         alt={title}
@@ -27,7 +49,6 @@ function BlogCard({ post }) {
 
       <div className="p-6">
 
-        {/* Tag + Bookmark */}
         <div className="mb-4 flex items-center justify-between">
 
           <div className="flex flex-wrap gap-2">
@@ -41,23 +62,27 @@ function BlogCard({ post }) {
             ))}
           </div>
 
-          <button className="rounded-full p-2 transition hover:bg-slate-100">
-            <FiBookmark size={18} />
+          <button
+            onClick={handleBookmark}
+            className={`rounded-full p-2 transition ${
+              isBookmarked
+                ? "bg-blue-600 text-white"
+                : "hover:bg-slate-100"
+            }`}
+          >
+            <FiBookmark />
           </button>
 
         </div>
 
-        {/* Title */}
         <h3 className="line-clamp-2 text-2xl font-bold text-slate-900">
           {title}
         </h3>
 
-        {/* Body */}
         <p className="mt-4 line-clamp-3 text-slate-600">
           {body}
         </p>
 
-        {/* Footer */}
         <div className="mt-6 flex items-center justify-between">
 
           <div className="flex items-center gap-2 text-slate-500">
@@ -67,7 +92,7 @@ function BlogCard({ post }) {
 
           <Link
             to={`/blog/${id}`}
-            className="flex items-center gap-2 font-semibold text-blue-600 transition-all duration-300 hover:gap-3"
+            className="flex items-center gap-2 font-semibold text-blue-600 transition hover:gap-3"
           >
             Read More
             <FiArrowRight />

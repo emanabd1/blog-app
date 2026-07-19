@@ -13,8 +13,12 @@ function BlogForm({ onSubmit }) {
 
     if (file) {
       setImage(file);
-      const imageUrl = URL.createObjectURL(file);
-      setPreview(imageUrl);
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        setPreview(reader.result || "");
+      };
+      reader.readAsDataURL(file);
     }
   }
 
@@ -30,9 +34,10 @@ function BlogForm({ onSubmit }) {
       id: Date.now(),
       title,
       body,
-      image: preview,
+      image: preview || null,
       tags: ["custom"],
       reactions: 0,
+      isCustom: true,
     });
 
     setTitle("");

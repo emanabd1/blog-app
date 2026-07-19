@@ -1,10 +1,13 @@
-import { NavLink, Link } from "react-router-dom";
+import { NavLink, Link, useNavigate } from "react-router-dom";
 import { useAtom } from "jotai";
 import { FiSearch, FiBookmark } from "react-icons/fi";
 import { bookmarksAtom } from "../atoms/bookmarkAtom";
+import { searchAtom } from "../atoms/searchAtom";
 
 function Navbar() {
   const [bookmarks] = useAtom(bookmarksAtom);
+  const [searchTerm, setSearchTerm] = useAtom(searchAtom);
+  const navigate = useNavigate();
 
   const active =
     "text-blue-600 font-semibold";
@@ -56,10 +59,21 @@ function Navbar() {
 
         {/* Right Side */}
         <div className="flex items-center gap-4">
-
-          <button className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 transition hover:bg-slate-100">
-            <FiSearch size={18} />
-          </button>
+          <div className="relative hidden md:flex items-center rounded-full border border-slate-200 bg-white px-3 shadow-sm">
+            <FiSearch className="text-slate-400" />
+            <input
+              value={searchTerm}
+              onChange={(e) => {
+                const value = e.target.value;
+                setSearchTerm(value);
+                if (value && window.location.pathname !== "/") {
+                  navigate("/");
+                }
+              }}
+              placeholder="Search posts..."
+              className="ml-3 h-10 w-64 bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400"
+            />
+          </div>
 
           <Link
             to="/bookmarks"

@@ -1,5 +1,5 @@
 import { useAtom } from "jotai";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   FiHeart,
   FiBookmark,
@@ -7,9 +7,13 @@ import {
 } from "react-icons/fi";
 
 import { bookmarksAtom } from "../atoms/bookmarkAtom";
+import { likedPostsAtom } from "../atoms/likesAtom";
+import { customPostsAtom } from "../atoms/postAtom";
 
 function BlogCard({ post }) {
   const [bookmarks, setBookmarks] = useAtom(bookmarksAtom);
+  const [customPosts, setCustomPosts] = useAtom(customPostsAtom);
+  const navigate = useNavigate();
 
   const {
     id,
@@ -17,12 +21,18 @@ function BlogCard({ post }) {
     body,
     tags,
     reactions,
+    isCustom,
   } = post;
 
   const likes =
     typeof reactions === "number"
       ? reactions
       : reactions?.likes ?? 0;
+
+  const [likedPosts, setLikedPosts] = useAtom(likedPostsAtom);
+  const isLiked = likedPosts.includes(id);
+
+  const displayedLikes = likes + (isLiked ? 1 : 0);
 
   const isBookmarked = bookmarks.some(
     (item) => item.id === id
@@ -38,12 +48,46 @@ function BlogCard({ post }) {
     }
   }
 
+  function handleLike() {
+    if (isLiked) {
+      setLikedPosts(likedPosts.filter((itemId) => itemId !== id));
+    } else {
+      setLikedPosts([...likedPosts, id]);
+    }
+  }
+
+  function handleDelete() {
+    setCustomPosts((current) =>
+      current.filter((item) => String(item.id) !== String(id))
+    );
+    setBookmarks((current) =>
+      current.filter((item) => String(item.id) !== String(id))
+    );
+  }
+
+  const defaultImage = () => {
+    const query =
+      post.tags?.[0] ||
+      title?.split(" ")[0] ||
+      "blog";
+
+    return `https://source.unsplash.com/600x400/?${encodeURIComponent(
+      query
+    )},blog`;
+  };
+
+  const fallbackImage = `https://picsum.photos/seed/${id}/600/400`;
+
   return (
     <article className="group overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
 
       <img
-        src={`https://picsum.photos/seed/${id}/600/400`}
+        src={post.image || defaultImage()}
         alt={title}
+        onError={(e) => {
+          e.currentTarget.onerror = null;
+          e.currentTarget.src = fallbackImage;
+        }}
         className="h-56 w-full object-cover transition duration-500 group-hover:scale-105"
       />
 
@@ -83,20 +127,47 @@ function BlogCard({ post }) {
           {body}
         </p>
 
-        <div className="mt-6 flex items-center justify-between">
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
 
-          <div className="flex items-center gap-2 text-slate-500">
-            <FiHeart />
-            <span>{likes}</span>
-          </div>
-
-          <Link
-            to={`/blog/${id}`}
-            className="flex items-center gap-2 font-semibold text-blue-600 transition hover:gap-3"
+          <button
+            onClick={handleLike}
+            className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition ${
+              isLiked
+                ? "bg-red-600 text-white"
+                : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+            }`}
+            aria-pressed={isLiked}
           >
-            Read More
-            <FiArrowRight />
-          </Link>
+            <FiHeart />
+            <span>{displayedLikes}</span>
+          </button>
+
+          <div className="flex flex-wrap items-center gap-2">
+            {isCustom && (
+              <>
+                <button
+                  onClick={() => navigate(`/blog/${id}?edit=1`)}
+                  className="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-100"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={handleDelete}
+                  className="rounded-full bg-red-600 px-4 py-2 text-sm text-white transition hover:bg-red-700"
+                >
+                  Delete
+                </button>
+              </>
+            )}
+
+            <Link
+              to={`/blog/${id}`}
+              className="flex items-center gap-2 font-semibold text-blue-600 transition hover:gap-3"
+            >
+              Read More
+              <FiArrowRight />
+            </Link>
+          </div>
 
         </div>
 

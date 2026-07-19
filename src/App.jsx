@@ -7,6 +7,7 @@ import Home from "./pages/Home";
 import BlogDetails from "./pages/BlogDetails";
 import CreatePost from "./pages/CreatePost";
 import Bookmarks from "./pages/Bookmarks";
+import NotFound from "./pages/NotFound";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
           <Route path="/blog/:id" element={<BlogDetails />} />
           <Route path="/create" element={<CreatePost />} />
           <Route path="/bookmarks" element={<Bookmarks />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
 

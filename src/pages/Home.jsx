@@ -1,15 +1,21 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useAtom } from "jotai";
 import Hero from "../components/Hero";
 import BlogCard from "../components/BlogCard";
 import Loading from "../components/Loading";
 import Button from "../components/Button"; // Helper component
 import { getPosts } from "../services/api";
+import { customPostsAtom } from "../atoms/postAtom";
+import { searchAtom } from "../atoms/searchAtom";
 
 function Home() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [selectedTag, setSelectedTag] = useState(null);
+
+  const [customPosts] = useAtom(customPostsAtom);
+  const [searchTerm, setSearchTerm] = useAtom(searchAtom);
 
   useEffect(() => {
     async function loadPosts() {
@@ -25,45 +31,72 @@ function Home() {
     loadPosts();
   }, []);
 
-  // Extract unique tags
-  const allTags = [...new Set(posts.flatMap((p) => p.tags))];
+  const allPosts = useMemo(
+    () => [...customPosts, ...posts],
+    [customPosts, posts]
+  );
 
-  // Filter posts
-  const filteredPosts = selectedTag
-    ? posts.filter((p) => p.tags.includes(selectedTag))
-    : posts;
+  const allTags = useMemo(
+    () => [...new Set(allPosts.flatMap((p) => p.tags || []))],
+    [allPosts]
+  );
+
+  const filteredPosts = useMemo(() => {
+    return allPosts
+      .filter((post) => {
+        const query = searchTerm.trim().toLowerCase();
+        const title = post.title?.toLowerCase() || "";
+        const body = post.body?.toLowerCase() || "";
+        const tags = (post.tags || []).join(" ").toLowerCase();
+
+        return (
+          (!selectedTag || post.tags?.includes(selectedTag)) &&
+          (!query || title.includes(query) || body.includes(query) || tags.includes(query))
+        );
+      });
+  }, [allPosts, selectedTag, searchTerm]);
 
   return (
     <>
       <Hero />
       <section className="max-w-7xl mx-auto px-6 pb-24">
         <div className="mb-10">
-          <h2 className="text-3xl font-bold text-slate-900">Trending Posts</h2>
-          
-          {/* Tag Filter Buttons */}
-          <div className="mt-6 flex flex-wrap gap-2">
-            <Button 
-              onClick={() => setSelectedTag(null)} 
-              variant={!selectedTag ? "primary" : "secondary"}
-            >
-              All
-            </Button>
-            {allTags.map((tag) => (
-              <Button 
-                key={tag} 
-                onClick={() => setSelectedTag(tag)}
-                variant={selectedTag === tag ? "primary" : "secondary"}
-              >
-                {tag}
-              </Button>
-            ))}
+          <div>
+            <h2 className="text-3xl font-bold text-slate-900">Trending Posts</h2>
+            <p className="mt-2 text-slate-500">
+              Browse both fetched stories and your saved custom posts.
+            </p>
           </div>
+        </div>
+
+        <div className="mb-8 flex flex-wrap gap-2">
+          <Button
+            onClick={() => setSelectedTag(null)}
+            variant={!selectedTag ? "primary" : "secondary"}
+          >
+            All
+          </Button>
+          {allTags.map((tag) => (
+            <Button
+              key={tag}
+              onClick={() => setSelectedTag(tag)}
+              variant={selectedTag === tag ? "primary" : "secondary"}
+            >
+              {tag}
+            </Button>
+          ))}
         </div>
 
         {loading && <Loading />}
         {error && <p className="text-center text-red-500">{error}</p>}
-        
-        {!loading && !error && (
+
+        {!loading && !error && filteredPosts.length === 0 && (
+          <p className="text-center text-slate-500">
+            No posts matched your search or selected tags.
+          </p>
+        )}
+
+        {!loading && !error && filteredPosts.length > 0 && (
           <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
             {filteredPosts.map((post) => (
               <BlogCard key={post.id} post={post} />

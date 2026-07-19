@@ -1,10 +1,9 @@
 import { useState } from "react";
-import { FiUpload } from "react-icons/fi"; 
+import { FiUpload } from "react-icons/fi";
 
 function BlogForm({ onSubmit }) {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
-  const [image, setImage] = useState(null);
   const [preview, setPreview] = useState("");
   const [error, setError] = useState("");
 
@@ -12,8 +11,6 @@ function BlogForm({ onSubmit }) {
     const file = e.target.files[0];
 
     if (file) {
-      setImage(file);
-
       const reader = new FileReader();
       reader.onload = () => {
         setPreview(reader.result || "");
@@ -42,7 +39,6 @@ function BlogForm({ onSubmit }) {
 
     setTitle("");
     setBody("");
-    setImage(null);
     setPreview("");
     setError("");
   }
@@ -62,7 +58,6 @@ function BlogForm({ onSubmit }) {
         </div>
       )}
 
-      {}
       <div className="mb-6">
         <label className="mb-2 block font-medium">Title</label>
         <input
@@ -85,7 +80,6 @@ function BlogForm({ onSubmit }) {
         />
       </div>
 
-      {}
       <div className="mb-10">
         <label className="mb-3 block font-medium text-slate-900">
           Cover Image
@@ -97,11 +91,11 @@ function BlogForm({ onSubmit }) {
             className="flex h-72 w-full cursor-pointer flex-col items-center justify-center rounded-3xl border-2 border-dashed border-slate-300 bg-slate-50 transition hover:border-blue-600 hover:bg-blue-50"
           >
             {preview ? (
-              <div className="h-full w-full overflow-hidden rounded-[1.25rem] p-2">
+              <div className="h-full w-full overflow-hidden rounded-2xl p-2">
                 <img
                   src={preview}
                   alt="preview"
-                  className="h-full w-full rounded-[1rem] object-cover shadow-inner"
+                  className="h-full w-full rounded-2xl object-cover shadow-inner"
                 />
               </div>
             ) : (
@@ -128,7 +122,6 @@ function BlogForm({ onSubmit }) {
               type="button"
               onClick={() => {
                 setPreview("");
-                setImage(null);
               }}
               className="absolute right-5 top-5 rounded-full bg-white/90 p-2 text-slate-600 shadow-md backdrop-blur-sm transition hover:bg-white hover:text-red-600"
             >

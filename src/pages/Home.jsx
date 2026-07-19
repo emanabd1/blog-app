@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useAtom } from "jotai";
 import Hero from "../components/Hero";
 import BlogCard from "../components/BlogCard";
 import Loading from "../components/Loading";
-import Button from "../components/Button"; // Helper component
+import Button from "../components/Button";
 import { getPosts } from "../services/api";
 import { customPostsAtom } from "../atoms/postAtom";
 import { searchAtom } from "../atoms/searchAtom";
@@ -15,7 +15,7 @@ function Home() {
   const [selectedTag, setSelectedTag] = useState(null);
 
   const [customPosts] = useAtom(customPostsAtom);
-  const [searchTerm, setSearchTerm] = useAtom(searchAtom);
+  const [searchTerm] = useAtom(searchAtom);
 
   useEffect(() => {
     async function loadPosts() {
@@ -31,30 +31,30 @@ function Home() {
     loadPosts();
   }, []);
 
-  const allPosts = useMemo(
-    () => [...customPosts, ...posts],
-    [customPosts, posts]
-  );
+  const allPosts = customPosts.concat(posts);
+  const allTags = [];
 
-  const allTags = useMemo(
-    () => [...new Set(allPosts.flatMap((p) => p.tags || []))],
-    [allPosts]
-  );
-
-  const filteredPosts = useMemo(() => {
-    return allPosts
-      .filter((post) => {
-        const query = searchTerm.trim().toLowerCase();
-        const title = post.title?.toLowerCase() || "";
-        const body = post.body?.toLowerCase() || "";
-        const tags = (post.tags || []).join(" ").toLowerCase();
-
-        return (
-          (!selectedTag || post.tags?.includes(selectedTag)) &&
-          (!query || title.includes(query) || body.includes(query) || tags.includes(query))
-        );
+  allPosts.forEach((post) => {
+    if (post.tags) {
+      post.tags.forEach((tag) => {
+        if (!allTags.includes(tag)) {
+          allTags.push(tag);
+        }
       });
-  }, [allPosts, selectedTag, searchTerm]);
+    }
+  });
+
+  const filteredPosts = allPosts.filter((post) => {
+    const query = searchTerm.trim().toLowerCase();
+    const title = (post.title || "").toLowerCase();
+    const body = (post.body || "").toLowerCase();
+    const tags = (post.tags || []).join(" ").toLowerCase();
+
+    const matchesTag = !selectedTag || (post.tags || []).includes(selectedTag);
+    const matchesSearch = !query || title.includes(query) || body.includes(query) || tags.includes(query);
+
+    return matchesTag && matchesSearch;
+  });
 
   return (
     <>

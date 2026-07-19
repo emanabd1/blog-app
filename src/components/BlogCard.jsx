@@ -1,10 +1,6 @@
 import { useAtom } from "jotai";
 import { Link, useNavigate } from "react-router-dom";
-import {
-  FiHeart,
-  FiBookmark,
-  FiArrowRight,
-} from "react-icons/fi";
+import { FiHeart, FiBookmark, FiArrowRight } from "react-icons/fi";
 
 import { bookmarksAtom } from "../atoms/bookmarkAtom";
 import { likedPostsAtom } from "../atoms/likesAtom";
@@ -13,36 +9,18 @@ import { customPostsAtom } from "../atoms/postAtom";
 function BlogCard({ post }) {
   const [bookmarks, setBookmarks] = useAtom(bookmarksAtom);
   const [customPosts, setCustomPosts] = useAtom(customPostsAtom);
+  const [likedPosts, setLikedPosts] = useAtom(likedPostsAtom);
   const navigate = useNavigate();
 
-  const {
-    id,
-    title,
-    body,
-    tags,
-    reactions,
-    isCustom,
-  } = post;
-
-  const likes =
-    typeof reactions === "number"
-      ? reactions
-      : reactions?.likes ?? 0;
-
-  const [likedPosts, setLikedPosts] = useAtom(likedPostsAtom);
+  const { id, title, body, tags, reactions, isCustom } = post;
+  const likes = typeof reactions === "number" ? reactions : reactions?.likes ?? 0;
   const isLiked = likedPosts.includes(id);
-
   const displayedLikes = likes + (isLiked ? 1 : 0);
-
-  const isBookmarked = bookmarks.some(
-    (item) => item.id === id
-  );
+  const isBookmarked = bookmarks.some((item) => item.id === id);
 
   function handleBookmark() {
     if (isBookmarked) {
-      setBookmarks(
-        bookmarks.filter((item) => item.id !== id)
-      );
+      setBookmarks(bookmarks.filter((item) => item.id !== id));
     } else {
       setBookmarks([...bookmarks, post]);
     }
@@ -57,32 +35,20 @@ function BlogCard({ post }) {
   }
 
   function handleDelete() {
-    setCustomPosts((current) =>
-      current.filter((item) => String(item.id) !== String(id))
-    );
-    setBookmarks((current) =>
-      current.filter((item) => String(item.id) !== String(id))
-    );
+    setCustomPosts(customPosts.filter((item) => String(item.id) !== String(id)));
+    setBookmarks(bookmarks.filter((item) => String(item.id) !== String(id)));
   }
 
-  const defaultImage = () => {
-    const query =
-      post.tags?.[0] ||
-      title?.split(" ")[0] ||
-      "blog";
-
-    return `https://source.unsplash.com/600x400/?${encodeURIComponent(
-      query
-    )},blog`;
-  };
-
+  const defaultImageQuery = (tags && tags[0]) || title.split(" ")[0] || "blog";
+  const defaultImage = `https://source.unsplash.com/600x400/?${encodeURIComponent(defaultImageQuery)},blog`;
   const fallbackImage = `https://picsum.photos/seed/${id}/600/400`;
+  const imageUrl = post.image || defaultImage;
 
   return (
     <article className="group overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
 
       <img
-        src={post.image || defaultImage()}
+        src={imageUrl}
         alt={title}
         onError={(e) => {
           e.currentTarget.onerror = null;
@@ -96,7 +62,7 @@ function BlogCard({ post }) {
         <div className="mb-4 flex items-center justify-between">
 
           <div className="flex flex-wrap gap-2">
-            {tags?.slice(0, 2).map((tag) => (
+            {(tags || []).slice(0, 2).map((tag) => (
               <span
                 key={tag}
                 className="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700"

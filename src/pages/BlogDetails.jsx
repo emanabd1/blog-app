@@ -1,18 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { useAtom } from "jotai";
-import {
-  FiArrowLeft,
-  FiHeart,
-  FiBookmark,
-} from "react-icons/fi";
+import { FiArrowLeft, FiHeart, FiBookmark } from "react-icons/fi";
 
 import Loading from "../components/Loading";
 import CommentCard from "../components/CommentCard";
-import {
-  getPost,
-  getComments,
-} from "../services/api";
+import { getPost, getComments } from "../services/api";
 import { bookmarksAtom } from "../atoms/bookmarkAtom";
 import { customPostsAtom } from "../atoms/postAtom";
 import { likedPostsAtom } from "../atoms/likesAtom";
@@ -34,10 +27,7 @@ function BlogDetails() {
   const [bookmarks, setBookmarks] = useAtom(bookmarksAtom);
   const [customPosts, setCustomPosts] = useAtom(customPostsAtom);
 
-  const customPost = useMemo(
-    () => customPosts.find((item) => String(item.id) === String(id)),
-    [customPosts, id]
-  );
+  const customPost = customPosts.find((item) => String(item.id) === String(id));
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -88,10 +78,7 @@ function BlogDetails() {
     );
   }
 
-  const likes =
-    typeof post.reactions === "number"
-      ? post.reactions
-      : post.reactions?.likes ?? 0;
+  const likes = typeof post.reactions === "number" ? post.reactions : post.reactions?.likes ?? 0;
 
   const [likedPosts, setLikedPosts] = useAtom(likedPostsAtom);
   const isLiked = likedPosts.includes(post.id);
@@ -177,7 +164,16 @@ function BlogDetails() {
       <div className="mt-10">
 
         {editMode ? (
-          <div className="space-y-6 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+          <div className="space-y-6 rounded-3xl border border-slate-300 bg-slate-50 p-8 shadow-sm">
+            <div>
+              <h2 className="mb-4 text-3xl font-bold text-slate-900">
+                Edit Your Post
+              </h2>
+              <p className="mb-6 text-slate-600">
+                Change the title, body, or tags and click Save Changes.
+              </p>
+            </div>
+
             <div>
               <label className="mb-2 block text-sm font-semibold text-slate-700">
                 Title
@@ -185,7 +181,7 @@ function BlogDetails() {
               <input
                 value={editedTitle}
                 onChange={(e) => setEditedTitle(e.target.value)}
-                className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 outline-none focus:border-blue-600"
+                className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 outline-none focus:border-blue-600"
               />
             </div>
 
@@ -235,7 +231,7 @@ function BlogDetails() {
             </h1>
 
             <div className="mt-6 flex flex-wrap gap-3">
-              {post.tags.map((tag) => (
+              {(post.tags || []).map((tag) => (
                 <span
                   key={tag}
                   className="rounded-full bg-blue-100 px-4 py-2 text-sm font-medium text-blue-700"

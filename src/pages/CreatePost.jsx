@@ -7,14 +7,11 @@ import { customPostsAtom } from "../atoms/postAtom";
 
 function CreatePost() {
   const navigate = useNavigate();
-
-  const [, setPosts] = useAtom(customPostsAtom);
+  const [, setCustomPosts] = useAtom(customPostsAtom);
 
   function handleCreatePost(post) {
-    setPosts((prev) => [post, ...prev]);
-
+    setCustomPosts((currentPosts) => [post, ...currentPosts]);
     toast.success("Post created successfully!");
-
     navigate("/");
   }
 

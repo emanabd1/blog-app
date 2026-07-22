@@ -22,8 +22,8 @@ function BlogForm({ onSubmit }) {
   function handleSubmit(e) {
     e.preventDefault();
 
-    if (!title.trim() || !body.trim()) {
-      setError("Please fill in all fields.");
+    if (!title.trim()) {
+      setError("Title cannot be empty.");
       return;
     }
 

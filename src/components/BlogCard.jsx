@@ -16,11 +16,13 @@ function BlogCard({ post }) {
 
   const { id, title, body, tags, reactions, isCustom } = post;
   const likes = typeof reactions === "number" ? reactions : reactions?.likes ?? 0;
+  const commentCount = typeof post.commentCount === "number" ? post.commentCount : post.comments?.length ?? 0;
   const isLiked = likedPosts.includes(id);
   const displayedLikes = likes + (isLiked ? 1 : 0);
   const isBookmarked = bookmarks.some((item) => item.id === id);
 
-  function handleBookmark() {
+  function handleBookmark(event) {
+    event.stopPropagation();
     if (isBookmarked) {
       setBookmarks(bookmarks.filter((item) => item.id !== id));
     } else {
@@ -28,7 +30,8 @@ function BlogCard({ post }) {
     }
   }
 
-  function handleLike() {
+  function handleLike(event) {
+    event.stopPropagation();
     if (isLiked) {
       setLikedPosts(likedPosts.filter((itemId) => itemId !== id));
     } else {
@@ -36,7 +39,8 @@ function BlogCard({ post }) {
     }
   }
 
-  function handleDelete() {
+  function handleDelete(event) {
+    event.stopPropagation();
     const confirmed = window.confirm("Delete this post?");
     if (!confirmed) {
       return;
@@ -49,8 +53,15 @@ function BlogCard({ post }) {
 
   const imageUrl = getPostImageUrl(post, { width: 600, height: 400 });
 
+  function goToDetails() {
+    navigate(`/blog/${id}`);
+  }
+
   return (
-    <article className="group overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
+    <article
+      onClick={goToDetails}
+      className="group cursor-pointer overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-xl"
+    >
       <img
         src={imageUrl}
         alt={title}
@@ -108,11 +119,18 @@ function BlogCard({ post }) {
             <span>{displayedLikes}</span>
           </button>
 
+          <span className="rounded-full bg-slate-100 px-4 py-2 text-sm text-slate-600">
+            💬 {commentCount}
+          </span>
+
           <div className="flex flex-wrap items-center gap-2">
             {isCustom && (
               <>
                 <button
-                  onClick={() => navigate(`/blog/${id}?edit=1`)}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    navigate(`/blog/${id}?edit=1`);
+                  }}
                   className="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-100"
                 >
                   Edit
@@ -128,6 +146,7 @@ function BlogCard({ post }) {
 
             <Link
               to={`/blog/${id}`}
+              onClick={(event) => event.stopPropagation()}
               className="flex items-center gap-2 font-semibold text-blue-600 transition hover:gap-3"
             >
               Read More

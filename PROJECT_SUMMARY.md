@@ -1,142 +1,168 @@
 # Blog App Project Summary
 
 ## Overview
-This is a React blog application built with Vite, React Router, Jotai, and Tailwind CSS. The app fetches blog posts and comments from the DummyJSON API. It also allows the user to create custom posts locally, bookmark posts, like posts, and filter/search the post list.
+BlogSpace is a React blog application built with Vite, React Router, Jotai, and Tailwind CSS.
+It combines fetched content from the DummyJSON API with locally created posts, and provides search, tag filtering, comments, likes, bookmarks, and custom post editing.
+
+## Purpose
+The app is designed to demonstrate a complete frontend blog experience with:
+- API integration for posts and comments
+- persistent client-side state
+- dynamic routing and full-card navigation
+- editable local posts and bookmarks
+- responsive, Tailwind-styled UI
 
 ## Project Structure
 
 - `src/App.jsx`
   - Main application shell.
   - Defines routes for Home, Blog Details, Create Post, Bookmarks, and NotFound.
-  - Always renders `Navbar` and `Footer`.
+  - Supports both `/blog/:id` and `/comments/blog/:id` for the same details view.
+  - Renders `Navbar`, `Footer`, and `Toaster` globally.
 
 - `src/components/Navbar.jsx`
-  - Shows navigation links to Home, Create Post, Bookmarks.
-  - Displays a search input connected to `searchAtom`.
-  - Displays bookmark count from `bookmarksAtom`.
+  - Site header with links to Home, Create Post, and Bookmarks.
+  - Includes search input connected to `searchAtom`.
+  - Displays current bookmark count.
 
 - `src/components/BlogCard.jsx`
-  - Receives `post` as a prop.
-  - Shows image, title, excerpt, tags, like button, bookmark button, Edit/Delete buttons for custom posts, and Read More link.
-  - Uses `jotai` atoms for bookmarks, likes, and custom posts.
-  - Uses a fallback image behavior when `post.image` is missing or fails to load.
+  - Card UI for a single post.
+  - Supports click-to-navigate for the full card.
+  - Shows a title, excerpt, tags, image, like button, bookmark button, and comment count.
+  - Supports edit/delete actions for locally created posts.
+  - Selects a content-specific local image when API images are unavailable.
 
 - `src/components/BlogForm.jsx`
-  - Reusable post creation form.
-  - Manages title, body, image preview, and validation state with `useState`.
-  - Submits a new local post object to `onSubmit`.
+  - Reusable form for creating a custom post.
+  - Collects title, body, image preview, and optional tags.
+  - Validates required fields and emits a new post object.
+
+- `src/components/CommentCard.jsx`
+  - Displays a comment with user avatar, name, handle, and body.
+  - Handles missing user data safely.
+
+- `src/components/Hero.jsx`
+  - Landing section shown on the Home page.
+  - Provides app intro text and calls to action.
+
+- `src/components/Loading.jsx`
+  - Displays skeleton cards and loading indicators.
+  - Used while fetching posts or details.
+
+- `src/components/EmptyState.jsx`
+  - Shown when bookmarks or filtered results are empty.
+  - Provides a friendly message and guidance.
 
 - `src/pages/Home.jsx`
-  - Fetches post list from `getPosts()` on mount.
-  - Combines API posts and local custom posts from `customPostsAtom`.
-  - Builds a tag filter list from all post tags.
-  - Filters posts by selected tag and search query.
-  - Shows loading, error, and empty states.
+  - Fetches fetched posts from DummyJSON on mount.
+  - Combines API posts with local posts from `customPostsAtom`.
+  - Fetches comment counts for API posts.
+  - Builds tag filters from all available post tags.
+  - Filters results by search query and selected tag.
+  - Renders `BlogCard` components in a responsive grid.
 
 - `src/pages/BlogDetails.jsx`
-  - Reads `id` from `useParams()`.
-  - Uses `customPostsAtom` to check for local post overrides.
-  - If the post is custom, loads it locally and optionally enables edit mode via `?edit=1`.
-  - Otherwise, fetches a single post and comments from DummyJSON.
-  - Supports like, bookmark, edit, and delete actions.
-  - Shows comments via `CommentCard`.
+  - Reads `id` from route params using `useParams()`.
+  - Loads a local custom post if one exists for the ID.
+  - Otherwise, fetches the single post and comment list from the API.
+  - Supports bookmarking, liking, and deleting.
+  - Allows local posts to be edited via `?edit=1`.
+  - Displays comments with `CommentCard`.
 
 - `src/pages/CreatePost.jsx`
-  - Renders `BlogForm`.
-  - Adds new custom post to `customPostsAtom`.
-  - Shows an alert and navigates back to Home.
+  - Renders a page with `BlogForm`.
+  - Adds newly created posts to `customPostsAtom`.
+  - Navigates back to Home on success.
 
 - `src/pages/Bookmarks.jsx`
-  - Reads `bookmarksAtom`.
-  - Displays saved posts.
-  - Allows removing bookmarks.
+  - Shows bookmarked posts from `bookmarksAtom`.
+  - Lets the user remove bookmarks.
+  - Shows an empty state when no bookmarks are saved.
+
+- `src/pages/NotFound.jsx`
+  - Fallback page for undefined routes.
+  - Shows a friendly 404 message.
 
 - `src/services/api.js`
-  - Contains `getPosts()`, `getPost(id)`, and `getComments(id)`.
-  - Uses `https://dummyjson.com`.
-  - `getPosts()` fetches `?limit=10` posts.
-  - `getPost(id)` returns a single post.
-  - `getComments(id)` returns comments for the post.
+  - Contains helper functions for fetching external data.
+  - `getPosts()` fetches `https://dummyjson.com/posts?limit=10`.
+  - `getPost(id)` fetches a single post by ID.
+  - `getComments(id)` fetches comments for a post.
 
 - `src/atoms/postAtom.jsx`
-  - Uses Jotai atom for custom post list.
-  - Reads/writes `blog-app-custom-posts` in `localStorage`.
+  - Persistent Jotai atom for custom local posts.
+  - Uses `localStorage` key `blog-app-custom-posts`.
 
 - `src/atoms/bookmarkAtom.jsx`
-  - Uses Jotai atom for bookmarks.
-  - Reads/writes `blog-app-bookmarks` in `localStorage`.
+  - Persistent Jotai atom for bookmarked posts.
+  - Uses `localStorage` key `blog-app-bookmarks`.
 
 - `src/atoms/likesAtom.jsx`
-  - Uses Jotai atom for liked post IDs.
-  - Reads/writes `blog-app-liked-posts` in `localStorage`.
+  - Persistent Jotai atom for liked post IDs.
+  - Uses `localStorage` key `blog-app-liked-posts`.
 
 - `src/atoms/searchAtom.jsx`
-  - Uses Jotai atom for search query state.
+  - Jotai atom for the global search query.
 
-## What the Project Does
+- `src/utils/postImage.js`
+  - Chooses a local image asset based on post content.
+  - Matches keywords in title, tags, and body.
+  - Falls back to a seeded image selection for consistent results.
+
+## Core Functionality
 
 ### Home Page (`/`)
-- Fetches the list of posts from DummyJSON.
-- Shows local custom posts and fetched posts together.
-- Filters posts by search term and selected tag.
-- Shows loading state while fetching.
-- Shows error message if fetch fails.
-- Shows a tag filter row.
-- Renders each post using `BlogCard`.
+- Displays trending posts and local custom posts together.
+- Fetches posts and comment counts from the API.
+- Supports search and tag filtering.
+- Handles loading, error, and empty state.
+- Uses responsive layout and card-style previews.
 
-### Blog Details Page (`/blog/:id`)
-- Fetches a single post by ID from DummyJSON if it is not a local custom post.
-- Fetches comments for the post.
-- Allows bookmarking the post.
-- Allows liking the post.
-- If the post is local, allows editing and deleting.
-- Shows an edit form in edit mode.
+### Blog Details Page (`/blog/:id` and `/comments/blog/:id`)
+- Shows the selected post in full.
+- Fetches comment data for API-based posts.
+- Allows the user to like and bookmark posts.
+- Supports editing and deleting local custom posts.
+- Uses the same details view for both route shapes.
 
 ### Create Post Page (`/create`)
-- Shows a form with Title, Body, and image upload.
-- Validates that Title and Body are not empty.
-- Saves the post locally in `customPostsAtom`.
+- Lets users create a new blog post locally.
+- Saves the new post to persisted Jotai state.
 - Redirects back to Home after creation.
 
 ### Bookmarks Page (`/bookmarks`)
-- Shows bookmarked posts from `bookmarksAtom`.
-- Shows an empty state when there are no bookmarks.
-- Lets the user remove bookmarks.
+- Lists all bookmarked posts.
+- Allows removing bookmarks.
+- Persists bookmarks across refreshes.
 
-## State Management and Persistence
+## Data and State
 
-- `customPostsAtom` stores locally created posts.
-- `bookmarksAtom` stores bookmarked posts.
-- `likedPostsAtom` stores liked post IDs.
-- `searchAtom` stores the search input value.
-- All atoms persist to `localStorage` to survive page refresh.
+- API posts are fetched live from DummyJSON.
+- Comments are fetched from the API per post.
+- Custom posts are stored client-side only.
+- Likes, bookmarks, and custom posts are persisted via `localStorage`.
+- Search state is shared globally through Jotai.
 
-## API Integration
+## Technologies Used
 
-- `getPosts()` fetches posts from `https://dummyjson.com/posts?limit=10`.
-- `getPost(id)` fetches a single post.
-- `getComments(id)` fetches comments for a post.
-- The app uses fetched posts for Home and Blog Details.
-- Custom posts are local only and do not send anything to DummyJSON.
+- React 19
+- Vite
+- Tailwind CSS
+- React Router DOM
+- Jotai
+- Sonner for toast notifications
+- React Icons
 
-## Extra Notes
+## Notable Features
 
-- The app uses React Router for dynamic routing and navigation.
-- It uses functional React components with hooks.
-- The card UI is styled using Tailwind CSS classes.
-- The app includes a search box in the Navbar that filters on Home.
-- The `BlogCard` component supports both API posts and custom local posts.
-- Editing a custom post is done on the Blog Details page with `?edit=1`.
-- The delete button removes a custom post from local storage and bookmarks.
+- Full-card click navigation from the post list to details.
+- Persistent local state for custom posts, bookmarks, and likes.
+- Content-aware fallback images for posts without API images.
+- Support for both standard and alternate detail URLs.
+- Simple custom post editing and deletion flow.
+- Responsive styling and polished UI elements.
 
 ## Summary
-This project is a full implementation of the requested React blog app. It includes:
-- API data fetching with comments
-- dynamic routing
-- bookmarks in global Jotai state
-- local custom post creation
-- persistent local storage
-- search and tag filtering
-- custom post edit/delete behavior
-
-All functionality is implemented without adding unrelated features, and the project uses the current source code exactly as present in the workspace.
+BlogSpace is a polished React blog interface that blends remote API content with local user-created posts.
+It demonstrates client-side routing, persistent application state, and a complete post/comment/bookmark workflow.
+The current app is fully functional and ready to run with `npm install` and `npm run dev`.

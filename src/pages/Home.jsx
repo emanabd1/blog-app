@@ -4,9 +4,38 @@ import Hero from "../components/Hero";
 import BlogCard from "../components/BlogCard";
 import Loading from "../components/Loading";
 import Button from "../components/Button";
-import { getPosts } from "../services/api";
+import { getPosts, getComments } from "../services/api";
 import { customPostsAtom } from "../atoms/postAtom";
 import { searchAtom } from "../atoms/searchAtom";
+
+function collectTags(posts) {
+  const tags = [];
+
+  posts.forEach((post) => {
+    (post.tags || []).forEach((tag) => {
+      if (!tags.includes(tag)) {
+        tags.push(tag);
+      }
+    });
+  });
+
+  return tags;
+}
+
+function filterPosts(posts, searchTerm, selectedTag) {
+  const query = searchTerm.trim().toLowerCase();
+
+  return posts.filter((post) => {
+    const title = (post.title || "").toLowerCase();
+    const body = (post.body || "").toLowerCase();
+    const tags = (post.tags || []).join(" ").toLowerCase();
+
+    const matchesTag = !selectedTag || (post.tags || []).includes(selectedTag);
+    const matchesSearch = !query || title.includes(query) || body.includes(query) || tags.includes(query);
+
+    return matchesTag && matchesSearch;
+  });
+}
 
 function Home() {
   const [posts, setPosts] = useState([]);
@@ -21,7 +50,17 @@ function Home() {
     async function loadPosts() {
       try {
         const data = await getPosts();
-        setPosts(data);
+        const postsWithCounts = await Promise.all(
+          data.map(async (post) => {
+            try {
+              const comments = await getComments(post.id);
+              return { ...post, commentCount: comments.length };
+            } catch {
+              return { ...post, commentCount: 0 };
+            }
+          })
+        );
+        setPosts(postsWithCounts);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -32,29 +71,8 @@ function Home() {
   }, []);
 
   const allPosts = customPosts.concat(posts);
-  const allTags = [];
-
-  allPosts.forEach((post) => {
-    if (post.tags) {
-      post.tags.forEach((tag) => {
-        if (!allTags.includes(tag)) {
-          allTags.push(tag);
-        }
-      });
-    }
-  });
-
-  const filteredPosts = allPosts.filter((post) => {
-    const query = searchTerm.trim().toLowerCase();
-    const title = (post.title || "").toLowerCase();
-    const body = (post.body || "").toLowerCase();
-    const tags = (post.tags || []).join(" ").toLowerCase();
-
-    const matchesTag = !selectedTag || (post.tags || []).includes(selectedTag);
-    const matchesSearch = !query || title.includes(query) || body.includes(query) || tags.includes(query);
-
-    return matchesTag && matchesSearch;
-  });
+  const allTags = collectTags(allPosts);
+  const filteredPosts = filterPosts(allPosts, searchTerm, selectedTag);
 
   return (
     <>

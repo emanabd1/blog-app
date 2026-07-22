@@ -19,7 +19,7 @@ function Navbar() {
     <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/90 backdrop-blur">
       <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6">
 
-        {/* Logo */}
+        {}
         <Link
           to="/"
           className="text-2xl font-extrabold text-slate-900"
@@ -27,7 +27,7 @@ function Navbar() {
           Blog<span className="text-blue-600">Space</span>
         </Link>
 
-        {/* Navigation */}
+        {}
         <nav className="hidden items-center gap-8 md:flex">
           <NavLink
             to="/"
@@ -57,7 +57,7 @@ function Navbar() {
           </NavLink>
         </nav>
 
-        {/* Right Side */}
+        {}
         <div className="flex items-center gap-4">
           <div className="relative hidden md:flex items-center rounded-full border border-slate-200 bg-white px-3 shadow-sm">
             <FiSearch className="text-slate-400" />

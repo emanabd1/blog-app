@@ -19,6 +19,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/blog/:id" element={<BlogDetails />} />
+          <Route path="/comments/blog/:id" element={<BlogDetails />} />
           <Route path="/create" element={<CreatePost />} />
           <Route path="/bookmarks" element={<Bookmarks />} />
           <Route path="*" element={<NotFound />} />

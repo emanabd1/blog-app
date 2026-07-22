@@ -1,97 +1,91 @@
-const stopWords = new Set([
-  "a",
-  "an",
-  "and",
-  "are",
-  "as",
-  "at",
-  "be",
-  "been",
-  "before",
-  "being",
-  "but",
-  "by",
-  "can",
-  "could",
-  "do",
-  "does",
-  "did",
-  "for",
-  "from",
-  "had",
-  "has",
-  "have",
-  "he",
-  "her",
-  "here",
-  "his",
-  "how",
-  "i",
-  "if",
-  "in",
-  "into",
-  "is",
-  "it",
-  "its",
-  "may",
-  "might",
-  "must",
-  "not",
-  "of",
-  "on",
-  "or",
-  "our",
-  "out",
-  "over",
-  "she",
-  "should",
-  "so",
-  "that",
-  "the",
-  "their",
-  "them",
-  "there",
-  "these",
-  "they",
-  "this",
-  "those",
-  "through",
-  "to",
-  "under",
-  "was",
-  "were",
-  "what",
-  "when",
-  "where",
-  "which",
-  "while",
-  "who",
-  "will",
-  "with",
-  "would",
-  "you",
-  "your",
-]);
+import candybarImage from "../assets/candybar.png";
+import cookImage from "../assets/cook.png";
+import daveImage from "../assets/dave.png";
+import expertImage from "../assets/expert.png";
+import hopesImage from "../assets/hopes.png";
+import loveImage from "../assets/love.png";
+import motherAndSonImage from "../assets/mother and son.png";
+import rushedImage from "../assets/rushed.png";
+import secretImage from "../assets/secret.png";
+import snowAndNakedImage from "../assets/snow and naked.png";
 
-export function getPostImageUrl(post, { width = 1200, height = 800, forceFallback = false } = {}) {
+const imagePool = [
+  motherAndSonImage,
+  expertImage,
+  daveImage,
+  candybarImage,
+  hopesImage,
+  snowAndNakedImage,
+  loveImage,
+  cookImage,
+  secretImage,
+  rushedImage,
+];
+
+function getSeed(post) {
+  const text = [post?.title, ...(post?.tags || []), post?.body]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+  let hash = 0;
+  for (let i = 0; i < text.length; i += 1) {
+    hash = (hash << 5) - hash + text.charCodeAt(i);
+    hash |= 0;
+  }
+
+  return Math.abs(hash);
+}
+
+export function getPostImageUrl(post, { forceFallback = false } = {}) {
   if (post?.image && !forceFallback) {
     return post.image;
   }
 
   const sourceText = [post?.title, ...(post?.tags || []), post?.body]
     .filter(Boolean)
-    .join(" ");
+    .join(" ")
+    .toLowerCase();
 
-  const query = sourceText
-    .toLowerCase()
-    .replace(/[^a-z0-9\s]/g, " ")
-    .split(/\s+/)
-    .filter(Boolean)
-    .filter((word) => word.length > 2 && !stopWords.has(word))
-    .slice(0, 8)
-    .join(",");
+  if (/(mother|son|family|child|parent|home)/.test(sourceText)) {
+    return motherAndSonImage;
+  }
 
-  const fallbackQuery = query || post?.tags?.[0] || post?.title?.split(" ")[0] || "blog";
+  if (/(expert|tech|code|react|developer|programming|computer|ai|innov)/.test(sourceText)) {
+    return expertImage;
+  }
 
-  return `https://source.unsplash.com/${width}x${height}/?${encodeURIComponent(fallbackQuery)}`;
+  if (/(dave|name|person|man|woman|story)/.test(sourceText)) {
+    return daveImage;
+  }
+
+  if (/(candy|sweet|dessert|cake|cookie|chocolate)/.test(sourceText)) {
+    return candybarImage;
+  }
+
+  if (/(hope|dream|inspire|inspiration|bright)/.test(sourceText)) {
+    return hopesImage;
+  }
+
+  if (/(snow|winter|cold|ice|nature|mountain|travel|journey)/.test(sourceText)) {
+    return snowAndNakedImage;
+  }
+
+  if (/(love|heart|romance|relationship|kiss|friend)/.test(sourceText)) {
+    return loveImage;
+  }
+
+  if (/(cook|food|recipe|meal|drink|coffee|kitchen|eat)/.test(sourceText)) {
+    return cookImage;
+  }
+
+  if (/(history|crime|murder|secret|mystery|detective|american|ghost|unknown)/.test(sourceText)) {
+    return secretImage;
+  }
+
+  if (/(rush|hurry|deadline|stress|panic|late|door|time)/.test(sourceText)) {
+    return rushedImage;
+  }
+
+  return imagePool[getSeed(post) % imagePool.length];
 }

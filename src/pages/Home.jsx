@@ -87,7 +87,7 @@ function Home() {
           ))}
         </div>
 
-        {loading && <Loading />}
+        {loading && <Loading cards={6} />}
         {error && <p className="text-center text-red-500">{error}</p>}
 
         {!loading && !error && filteredPosts.length === 0 && (

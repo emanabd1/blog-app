@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useAtom } from "jotai";
+import { toast } from "sonner";
 
 import BlogForm from "../components/BlogForm";
 import { customPostsAtom } from "../atoms/postAtom";
@@ -12,7 +13,7 @@ function CreatePost() {
   function handleCreatePost(post) {
     setPosts((prev) => [post, ...prev]);
 
-    alert("Post created successfully!");
+    toast.success("Post created successfully!");
 
     navigate("/");
   }

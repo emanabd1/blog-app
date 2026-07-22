@@ -1,10 +1,12 @@
 import { useAtom } from "jotai";
+import { toast } from "sonner";
 import { Link, useNavigate } from "react-router-dom";
 import { FiHeart, FiBookmark, FiArrowRight } from "react-icons/fi";
 
 import { bookmarksAtom } from "../atoms/bookmarkAtom";
 import { likedPostsAtom } from "../atoms/likesAtom";
 import { customPostsAtom } from "../atoms/postAtom";
+import { getPostImageUrl } from "../utils/postImage";
 
 function BlogCard({ post }) {
   const [bookmarks, setBookmarks] = useAtom(bookmarksAtom);
@@ -35,25 +37,23 @@ function BlogCard({ post }) {
   }
 
   function handleDelete() {
+    const confirmed = window.confirm("Delete this post?");
+    if (!confirmed) {
+      return;
+    }
+
     setCustomPosts(customPosts.filter((item) => String(item.id) !== String(id)));
     setBookmarks(bookmarks.filter((item) => String(item.id) !== String(id)));
+    toast.success("Post deleted successfully!");
   }
 
-  const defaultImageQuery = (tags && tags[0]) || title.split(" ")[0] || "blog";
-  const defaultImage = `https://source.unsplash.com/600x400/?${encodeURIComponent(defaultImageQuery)},blog`;
-  const fallbackImage = `https://picsum.photos/seed/${id}/600/400`;
-  const imageUrl = post.image || defaultImage;
+  const imageUrl = getPostImageUrl(post, { width: 600, height: 400 });
 
   return (
     <article className="group overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
-
       <img
         src={imageUrl}
         alt={title}
-        onError={(e) => {
-          e.currentTarget.onerror = null;
-          e.currentTarget.src = fallbackImage;
-        }}
         className="h-56 w-full object-cover transition duration-500 group-hover:scale-105"
       />
 

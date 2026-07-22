@@ -1,7 +1,7 @@
 const BASE_URL = "https://dummyjson.com";
 
 export async function getPosts() {
-  const response = await fetch(`${BASE_URL}/posts?limit=12`);
+  const response = await fetch(`${BASE_URL}/posts?limit=10`);
 
   if (!response.ok) {
     throw new Error("Failed to fetch posts");

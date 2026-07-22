@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { useAtom } from "jotai";
+import { toast } from "sonner";
 import { FiArrowLeft, FiHeart, FiBookmark } from "react-icons/fi";
 
 import Loading from "../components/Loading";
@@ -9,6 +10,7 @@ import { getPost, getComments } from "../services/api";
 import { bookmarksAtom } from "../atoms/bookmarkAtom";
 import { customPostsAtom } from "../atoms/postAtom";
 import { likedPostsAtom } from "../atoms/likesAtom";
+import { getPostImageUrl } from "../utils/postImage";
 
 function BlogDetails() {
   const { id } = useParams();
@@ -26,6 +28,7 @@ function BlogDetails() {
 
   const [bookmarks, setBookmarks] = useAtom(bookmarksAtom);
   const [customPosts, setCustomPosts] = useAtom(customPostsAtom);
+  const [likedPosts, setLikedPosts] = useAtom(likedPostsAtom);
 
   const customPost = customPosts.find((item) => String(item.id) === String(id));
 
@@ -67,7 +70,7 @@ function BlogDetails() {
   }, [id, customPost, location.search]);
 
   if (loading) {
-    return <Loading />;
+    return <Loading detail />;
   }
 
   if (error) {
@@ -79,8 +82,6 @@ function BlogDetails() {
   }
 
   const likes = typeof post.reactions === "number" ? post.reactions : post.reactions?.likes ?? 0;
-
-  const [likedPosts, setLikedPosts] = useAtom(likedPostsAtom);
   const isLiked = likedPosts.includes(post.id);
   const displayedLikes = likes + (isLiked ? 1 : 0);
 
@@ -129,12 +130,18 @@ function BlogDetails() {
   }
 
   function handleDelete() {
+    const confirmed = window.confirm("Delete this post?");
+    if (!confirmed) {
+      return;
+    }
+
     setCustomPosts((current) =>
       current.filter((item) => String(item.id) !== String(post.id))
     );
     setBookmarks((current) =>
       current.filter((item) => String(item.id) !== String(post.id))
     );
+    toast.success("Post deleted successfully!");
     navigate("/");
   }
 
@@ -150,14 +157,8 @@ function BlogDetails() {
       </Link>
 
       <img
-        src={`https://source.unsplash.com/1200x500/?${encodeURIComponent(
-          post.tags?.[0] || post.title?.split(" ")[0] || "blog"
-        )},blog`}
+        src={getPostImageUrl(post, { width: 1200, height: 700 })}
         alt={post.title}
-        onError={(e) => {
-          e.currentTarget.onerror = null;
-          e.currentTarget.src = `https://picsum.photos/seed/${post.id}-detail/1200/500`;
-        }}
         className="mt-8 h-96 w-full rounded-3xl object-cover"
       />
 

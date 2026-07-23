@@ -22,6 +22,20 @@ const imagePool = [
   rushedImage,
 ];
 
+
+const imageMap = {
+  1: motherAndSonImage,
+  2: expertImage,
+  3: daveImage,
+  4: candybarImage,
+  5: hopesImage,
+  6: snowAndNakedImage,
+  7: loveImage,
+  8: cookImage,
+  9: secretImage,
+  10: rushedImage,
+};
+
 function getSeed(post) {
   const text = [post?.title, ...(post?.tags || []), post?.body]
     .filter(Boolean)
@@ -29,7 +43,8 @@ function getSeed(post) {
     .toLowerCase();
 
   let hash = 0;
-  for (let i = 0; i < text.length; i += 1) {
+
+  for (let i = 0; i < text.length; i++) {
     hash = (hash << 5) - hash + text.charCodeAt(i);
     hash |= 0;
   }
@@ -38,54 +53,16 @@ function getSeed(post) {
 }
 
 export function getPostImageUrl(post, { forceFallback = false } = {}) {
+  
   if (post?.image && !forceFallback) {
     return post.image;
   }
 
-  const sourceText = [post?.title, ...(post?.tags || []), post?.body]
-    .filter(Boolean)
-    .join(" ")
-    .toLowerCase();
-
-  if (/(mother|son|family|child|parent|home)/.test(sourceText)) {
-    return motherAndSonImage;
+  
+  if (imageMap[post?.id]) {
+    return imageMap[post.id];
   }
 
-  if (/(expert|tech|code|react|developer|programming|computer|ai|innov)/.test(sourceText)) {
-    return expertImage;
-  }
-
-  if (/(dave|name|person|man|woman|story)/.test(sourceText)) {
-    return daveImage;
-  }
-
-  if (/(candy|sweet|dessert|cake|cookie|chocolate)/.test(sourceText)) {
-    return candybarImage;
-  }
-
-  if (/(hope|dream|inspire|inspiration|bright)/.test(sourceText)) {
-    return hopesImage;
-  }
-
-  if (/(snow|winter|cold|ice|nature|mountain|travel|journey)/.test(sourceText)) {
-    return snowAndNakedImage;
-  }
-
-  if (/(love|heart|romance|relationship|kiss|friend)/.test(sourceText)) {
-    return loveImage;
-  }
-
-  if (/(cook|food|recipe|meal|drink|coffee|kitchen|eat)/.test(sourceText)) {
-    return cookImage;
-  }
-
-  if (/(history|crime|murder|secret|mystery|detective|american|ghost|unknown)/.test(sourceText)) {
-    return secretImage;
-  }
-
-  if (/(rush|hurry|deadline|stress|panic|late|door|time)/.test(sourceText)) {
-    return rushedImage;
-  }
-
+  
   return imagePool[getSeed(post) % imagePool.length];
 }
